@@ -1,4 +1,4 @@
-function [x_state, x_t_vec] = Main_isotropic_UKF(plot, Q, R, x_t_vec, x_uav, psi_uav)
+function [x_state, x_t_vec] = Main_isotropic_UKF(plotting, Q, R, x_t_vec, x_uav, psi_uav)
 %   Main file for first geolocation simulation: isotropic static jammer
 
 %   -----------------------------------------------------------------------
@@ -412,7 +412,7 @@ for k=1:N_loops_fb                                                             %
         
     %   Animation: plot new UAV, Jammer and UAV trace at each iteration.
     %   See corresponding function for detail
-        if(plot)
+        if(plotting)
             plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,r_d,psi_jammer);
         end
 end                              
@@ -614,7 +614,7 @@ for k=(N_loops_fb+1):N_loops_vf
         
     %   Animation: plot new UAV, Jammer and UAV trace at each iteration.
     %   See corresponding function for detail
-        if(plot)
+        if(plotting)
             plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,r_d,psi_jammer);
         end
 end

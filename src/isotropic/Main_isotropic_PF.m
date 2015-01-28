@@ -1,4 +1,4 @@
-function [x_state, x_t_vec] = Main_isotropic_PF(plot, Q, R, x_t_vec, x_uav, psi_uav)
+function [x_state, x_t_vec] = Main_isotropic_PF(plotting, Q, R, x_t_vec, x_uav, psi_uav)
 %   Main file for first geolocation simulation: isotropic static jammer
 
 %   -----------------------------------------------------------------------
@@ -384,8 +384,6 @@ for k=1:N_loops_fb                                                             %
             %%% students must uncomment the following line and design a EKF
             %%% and UKF
             [x_state(:,k),P_cov(:,:,k)]=fn_PF(x_vec_all(1,:),x_vec_all(k,:),h_0,P_r_filt_ratio(k,1),F_KF,G_KF,Q_KF,R_KF);
-            x_state_ini = x_state(:,k);
-            P_cov_ini = P_cov(:,:,k);
             
             if (re_run_bool==1)
                 re_run_bool=0;
@@ -399,8 +397,6 @@ for k=1:N_loops_fb                                                             %
             %%% students must uncomment the following line and design a EKF
             %%% and UKF
             [x_state(:,k),P_cov(:,:,k)]=fn_PF(x_vec_all(1,:),x_vec_all(k,:),h_0,P_r_filt_ratio(k,1),F_KF,G_KF,Q_KF,R_KF);
-            x_state_ini = x_state(:,k);
-            P_cov_ini = P_cov(:,:,k);
         end
         
         
@@ -411,7 +407,7 @@ for k=1:N_loops_fb                                                             %
         
     %   Animation: plot new UAV, Jammer and UAV trace at each iteration.
     %   See corresponding function for detail
-        if(plot)
+        if(plotting)
             plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,r_d,psi_jammer);
         end
 end                              
@@ -588,9 +584,7 @@ for k=(N_loops_fb+1):N_loops_vf
             %%%%% x_state(:,k) = x_t_vec;
             %%% students must uncomment the following line and design a EKF
             %%% and UKF
-            [x_state(:,k),P_cov(:,:,k)]=fn_PF(x_vec_all(1,:),x_vec_all(k,:),h_0,P_r_filt_ratio(k,1),F_KF,G_KF,Q_KF,R_KF);
-             x_state_ini = x_state(:,k);
-            P_cov_ini = P_cov(:,:,k);           
+            [x_state(:,k),P_cov(:,:,k)]=fn_PF(x_vec_all(1,:),x_vec_all(k,:),h_0,P_r_filt_ratio(k,1),F_KF,G_KF,Q_KF,R_KF);         
             re_run_bool=0;
           	div_EKF_bool=0;
 
@@ -605,14 +599,12 @@ for k=(N_loops_fb+1):N_loops_vf
             %%% students must uncomment the following line and design a EKF
             %%% and UKF
             [x_state(:,k),P_cov(:,:,k)]=fn_PF(x_vec_all(1,:),x_vec_all(k,:),h_0,P_r_filt_ratio(k,1),F_KF,G_KF,Q_KF,R_KF);
-            x_state_ini = x_state(:,k);
-            P_cov_ini = P_cov(:,:,k);
         end        
     
         
     %   Animation: plot new UAV, Jammer and UAV trace at each iteration.
     %   See corresponding function for detail
-        if(plot)
+        if(plotting)
             plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,r_d,psi_jammer);
         end
 end
