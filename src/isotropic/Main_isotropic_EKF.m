@@ -1,4 +1,4 @@
-function [x_state, x_t_vec] = Main_isotropic_EKF(plotting, Q, R, x_t_vec, x_uav, psi_uav)
+function [x_state, x_t_vec, P_cov] = Main_isotropic_EKF(plotting, Q, R, x_t_vec, x_uav, psi_uav)
 %   Main file for first geolocation simulation: isotropic static jammer
 
 %   -----------------------------------------------------------------------
