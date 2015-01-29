@@ -62,7 +62,7 @@ CRLB_PF = mean(CRLB_PF);
 mkdir('performance_comparison')
 % EKF
 CRLB_EKF(1,1:25) = NaN;
-figure
+figure('Visible','off')
 plot(RMSE_EKF)
 hold on
 plot(CRLB_EKF, 'g')
@@ -70,15 +70,15 @@ legend('RMSE', 'CRLB')
 title('EKF RMSE (m)')
 xlabel('Time step')
 ylabel('RMSE (m)')
-print('./performance_comparison/EKF','-deps')
+print('./performance_comparison/EKF','-dsvg')
 % EKF-Final
 xlim([1000, 1800])
 ylim('auto')
 title('Final track EKF RMSE (m)')
-print('./performance_comparison/EKF_final','-deps')
+print('./performance_comparison/EKF_final','-dsvg')
 % UKF
 CRLB_UKF(1,1:25) = NaN;
-figure
+figure('Visible','off')
 plot(RMSE_UKF)
 hold on
 plot(CRLB_UKF, 'g')
@@ -86,16 +86,16 @@ legend('RMSE', 'CRLB')
 title('UKF RMSE (m)')
 xlabel('Time step')
 ylabel('RMSE (m)')
-print('./performance_comparison/UKF','-deps')
+print('./performance_comparison/UKF','-dsvg')
 % UKF-Final
 xlim([1000, 1800])
 ylim('auto')
 title('Final track UKF RMSE (m)')
-print('./performance_comparison/UKF_final','-deps')
+print('./performance_comparison/UKF_final','-dsvg')
 
 % PF
 CRLB_PF(1,1:25) = NaN;
-figure
+figure('Visible','off')
 plot(RMSE_PF)
 hold on
 plot(CRLB_PF, 'g')
@@ -103,16 +103,16 @@ legend('RMSE', 'CRLB')
 title('PF RMSE (m)')
 xlabel('Time step')
 ylabel('RMSE (m)')
-print('./performance_comparison/PF','-deps')
+print('./performance_comparison/PF','-dsvg')
 % PF-Final
 xlim([1000, 1800])
 ylim('auto')
 title('Final track PF RMSE (m)')
-print('./performance_comparison/PF_final','-deps')
+print('./performance_comparison/PF_final','-dsvg')
 
 %% Comparison plots between filters -- EKF vs UKF vs PF
 clear plot;
-figure;
+figure('Visible','off');
 plot(RMSE_EKF, 'r');
 hold on;
 plot(RMSE_UKF, 'b');
@@ -120,11 +120,11 @@ plot(RMSE_PF , 'g');
 legend ('EKF','UKF','PF')
 xlabel('Time step')
 ylabel('RMSE (m)')
-print('./performance_comparison/All','-deps')
+print('./performance_comparison/All','-dsvg')
 % Final part
 xlim([1000, 1800])
 ylim('auto')
 title('Final track (m)')
-print('./performance_comparison/All_final','-deps')
+print('./performance_comparison/All_final','-dsvg')
 end
 
