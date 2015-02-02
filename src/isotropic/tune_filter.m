@@ -1,8 +1,15 @@
 function [meanRMSEvalues, meanRMSE_finalValues] = tune_filter( plotting, nIterations, filter_function)
 %PERFORMANCE_CHECKER This function will run the three filters nIterations
 %times and will calculate the RMSE.
-%   This function is temporary so no effort in proper and efficient coding is done.
-% 
+%  This function is temporary so no effort in proper and efficient coding is done.
+%  INPUT
+% plotting - Boolean to determine if we want to plot the proccess while simulating
+% nIterations - Number of iterations to run
+% filter_function - A function handler pointing to the filter rhat should
+% be used.
+% EXAMPLE OF USE
+% [meanRMSEvalues, meanRMSE_finalValues] = tune_filter( false, 10, @Main_isotropic_EKF)
+% TODO: Allow tuning of  P_init (Initial covariance matrix)
 
 %% Initialise variables
 x_state = zeros(2, 1801, nIterations);
@@ -30,11 +37,12 @@ for m=1:size(Q,2)
             end
         end
         meanRMSEvalues(m,k) = mean(mean(RMSE));
-        meanRMSE_finalValues(m,k) = mean(mean(RMSE(:, 1700:end)));
+        meanRMSE_finalValues(m,k) = mean(mean(RMSE(:, 1500:end)));
         RMSE = zeros(nIterations, 1801);
     end
 end
 
+mkdir('tuning_results')
 h = figure;
 surf(Q,R, meanRMSEvalues)
 set(gca, 'XScale', 'log', 'YScale', 'log', 'FontSize', 10)
@@ -42,6 +50,15 @@ xlabel('Q')
 ylabel('R')
 zlabel('RMSE')
 shading interp
-print(h, strcat(func2str(filter_function), int2str(nIterations)),'-dpng')
+print(h, strcat('./tuning_results/', func2str(filter_function), int2str(nIterations)),'-dsvg')
+% Plotting only RMSE of final values to evaluate convergence quality
+h = figure;
+surf(Q,R, meanRMSE_finalValues)
+set(gca, 'XScale', 'log', 'YScale', 'log', 'FontSize', 10)
+xlabel('Q')
+ylabel('R')
+zlabel('RMSE')
+shading interp
+print(h, strcat('./tuning_results/', func2str(filter_function), int2str(nIterations), '_FINAL'),'-dsvg')
 end
 

@@ -1,7 +1,12 @@
 function [RMSE_EKF, CRLB_EKF, RMSE_UKF, CRLB_UKF, RMSE_PF, CRLB_PF] = measure_performance( plotting, nIterations)
 %PERFORMANCE_CHECKER This function will run the three filters nIterations
-%times and will calculate the RMSE.
-%   This function is temporary so no effort in proper and efficient coding is done.
+% times, it will calculate the RMSE and plot the results in svg format.
+% This function is temporary so no effort in proper and efficient coding is done.
+% Example of use [RMSE_EKF, CRLB_EKF, RMSE_UKF, CRLB_UKF, RMSE_PF, CRLB_PF] = measure_performance(false, 10)
+% TODO: This function should be run after tuning individual Q and R for
+% each filter.
+% TODO2: Add possibility of modifying P_init
+
 
 %% Initialisation of variables for each filter
 % Matrix for storing each state (2) at each increment of time (1801) for
