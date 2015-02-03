@@ -9,6 +9,11 @@ function [RMSE_EKF, CRLB_EKF, RMSE_UKF, CRLB_UKF, RMSE_PF, CRLB_PF] = measure_pe
 
 
 %% Initialisation of variables for each filter
+% Global variables needed for place_jammer() and place_uav()
+global x_bnd y_bnd d2r
+x_bnd=12*10^3;                                                      %   x area boundary [m]
+y_bnd=12*10^3;                                                      %   y area boundary [m]
+d2r=pi/180;                                                         %   Value in rad = Value in deg * d2r
 % Matrix for storing each state (2) at each increment of time (1801) for
 % every iteraion (nIterations)
 x_state_ekf = zeros(2, 1801, nIterations);
@@ -21,9 +26,18 @@ RMSE_UKF = zeros(nIterations, 1801);
 CRLB_UKF = zeros(nIterations, 1801);
 RMSE_PF = zeros(nIterations, 1801);
 CRLB_PF = zeros(nIterations, 1801);
+% Jammer and UAV variables
+x_jammer = zeros(1,2,nIterations);
+x_uav = zeros(1,2,nIterations);
+psi_uav = zeros(1,1,nIterations);
 
-Q = 0.1;
-R = 0.05;
+Q_EKF = 0.01;
+R_EKF = 10;
+Q_UKF = 0.01;
+R_UKF = 10;
+Q_PF = 1;
+R_PF = 1;
+Pinit = 400;
 
 for i=1:nIterations
   x_jammer(:,:,i) = place_jammer();
@@ -31,7 +45,7 @@ for i=1:nIterations
 end
 
 for i=1:nIterations
-    [x_state_ekf(:, :, i), x_t_vec, P_cov(:,:,:,i)] = Main_isotropic_EKF(plotting, Q, R, x_jammer(:,:,i), x_uav(:,:,i), psi_uav(:,:,i));
+    [x_state_ekf(:, :, i), x_t_vec, P_cov(:,:,:,i)] = Main_anisotropic_EKF(plotting, Q_EKF, R_EKF, x_jammer(:,:,i), x_uav(:,:,i), psi_uav(:,:,i), Pinit);
     % For each t calculate the distance between the estimate and the real location
     for k=1 : size(x_state_ekf, 2)
         % Calculate the norm of all the states 
@@ -44,7 +58,7 @@ RMSE_EKF = mean(RMSE_EKF);
 CRLB_EKF = mean(CRLB_EKF);
 
 for i=1:nIterations
-    [x_state_ukf(:, :, i), x_t_vec, P_cov(:,:,:,i)] = Main_isotropic_UKF(plotting, Q, R, x_jammer(:,:,i), x_uav(:,:,i), psi_uav(:,:,i));
+    [x_state_ukf(:, :, i), x_t_vec, P_cov(:,:,:,i)] = Main_anisotropic_UKF(plotting, Q_UKF, R_UKF, x_jammer(:,:,i), x_uav(:,:,i), psi_uav(:,:,i), Pinit);
     for k=1 : size(x_state_ukf, 2)
         RMSE_UKF(i, k) = norm((x_state_ukf(:,k, i)- x_t_vec'));
         CRLB_UKF(i, k) = norm(diag(sqrt(diag(P_cov(:,:,k,i))))); % Eliminate the cross terms of the inverse of the covariance matrix
@@ -54,7 +68,7 @@ RMSE_UKF = mean(RMSE_UKF);
 CRLB_UKF = mean(CRLB_UKF);
 
 for i=1:nIterations
-    [x_state_pf(:, :, i), x_t_vec, P_cov(:,:,:,i)] = Main_isotropic_PF(plotting, 10*Q, 10*R, x_jammer(:,:,i), x_uav(:,:,i), psi_uav(:,:,i));
+    [x_state_pf(:, :, i), x_t_vec, P_cov(:,:,:,i)] = Main_anisotropic_PF(plotting, Q_PF, R_PF, x_jammer(:,:,i), x_uav(:,:,i), psi_uav(:,:,i), Pinit);
     for k=1 : size(x_state_pf, 2)
         RMSE_PF(i, k) = norm((x_state_pf(:,k, i)- x_t_vec'));
         CRLB_PF(i, k) = norm(diag(sqrt(diag(P_cov(:,:,k,i))))); % Eliminate the cross terms of the inverse of the covariance matrix

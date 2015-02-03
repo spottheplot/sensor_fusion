@@ -1,4 +1,4 @@
-function [x_state, x_t_vec, P_cov] = Main_isotropic_PF(plotting, Q, R, x_t_vec, x_uav, psi_uav)
+function [x_state, x_t_vec, P_cov] = Main_isotropic_PF(plotting, Q, R, x_t_vec, x_uav, psi_uav, P_ini)
 %   Main file for first geolocation simulation: isotropic static jammer
 
 %   -----------------------------------------------------------------------
@@ -27,9 +27,10 @@ function [x_state, x_t_vec, P_cov] = Main_isotropic_PF(plotting, Q, R, x_t_vec, 
 
 %   Workspace cleaning
 % clc; close all; clear all;
+clear fn_PF;
 
 % Default values for arguments not defined
-if nargin < 6
+if nargin < 7
     if not(exist('Q', 'var'))
         Q = 1;
     end
@@ -38,6 +39,9 @@ if nargin < 6
     end
     if not(exist('x_t_vec', 'var'))
         x_t_vec=place_jammer();
+    end
+    if not(exist('P_ini', 'var'))
+        P_ini=2000;
     end
     if (exist('x_uav', 'var'))
         x_vec = x_uav;
@@ -207,7 +211,7 @@ k_b=1.3806488*(10^(-23));                                                   %   
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %---------- < Q_KF must be set up appropriately > ------------%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            P_cov_ini=diag([2000^(2) 2000^(2)]);                            %   Initial state covariance guess - Change if needed
+            P_cov_ini=diag([(P_ini)^(2) (P_ini)^(2)]);                            %   Initial state covariance guess - Change if needed
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

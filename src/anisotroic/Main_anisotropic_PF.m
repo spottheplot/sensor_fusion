@@ -1,3 +1,4 @@
+function [x_state, x_t_vec, P_cov] = Main_anisotropic_PF(plotting, Q, R, x_t_vec, x_uav, psi_uav, P_ini)
 %   Main file for first geolocation simulation: isotropic static jammer
 
 %   -----------------------------------------------------------------------
@@ -25,8 +26,34 @@
 
 
 %   Workspace cleaning
-clc; close all; clear all;
+% clc; close all; clear all;
+clear fn_PF;
 
+% Default values for arguments not defined
+if nargin < 7
+    if not(exist('Q', 'var'))
+        Q = 1;
+    end
+    if not(exist('R', 'var'))
+        R=0.05;
+    end
+    if not(exist('x_t_vec', 'var'))
+        x_t_vec=place_jammer();
+    end
+    if not(exist('P_ini', 'var'))
+        P_ini=2000;
+    end
+    if (exist('x_uav', 'var'))
+        x_vec = x_uav;
+        psi_0 = psi_uav;
+    else
+        [x_vec psi_0]=place_uav();
+    end
+else
+    x_vec = x_uav;
+    psi_0 = psi_uav;
+end
+        
 
 global d2r
 
@@ -71,7 +98,7 @@ k_b=1.3806488*(10^(-23));                                                   %   
     %   Jammer parameters
    	%   Static Jammer true location : located within a square centred
    	%   inside the search area. These parameters are not known by the UAV
-        x_t_vec=place_jammer();                                             %   See corresponding function. It places the jammer randomly in a square in the search area        
+%         x_t_vec=place_jammer();                                             %   See corresponding function. It places the jammer randomly in a square in the search area        
         %   GPS jammer model for the simulation
         P_t_min=1*(10^(-3));                                                %   [W] - Generally around 1mW
         P_t_max=650*(10^(-3));                                              %   [W] - Generally 650mW
@@ -79,7 +106,7 @@ k_b=1.3806488*(10^(-23));                                                   %   
         %   simulation. Assumed always constant (civil jammers)
         
         %   Jammer orientation
-        psi_jammer=rand * 360;  % MODIFIED                                      %   Degrees [0-360]
+        psi_jammer=0;                                                      %   Degrees [0-360]
         psi_jammer=psi_jammer*d2r;                                          %   In radians
         
         %   Jammer Gain distribution
@@ -106,8 +133,8 @@ k_b=1.3806488*(10^(-23));                                                   %   
         
     %   UAV parameters    
         %   Initial position and heading
-        [x_vec psi_0]=place_uav();	%   See corresponding function. It places the UAV randomly in a small square in the South-West area with a random heading                          
-       
+%         [x_vec psi_0]=x_uav;	%   See corresponding function. It places the UAV randomly in a small square in the South-West area with a random heading                          
+        
         
         %   Altitude-hold
     	h_0=200;                                                            %   Constant altitude of the UAV [m]        
@@ -171,7 +198,7 @@ k_b=1.3806488*(10^(-23));                                                   %   
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %---------- < Q_KF must be set up appropriately > ------------%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            Q_KF=diag([((4))^2 ((4))^2]);                             %   Process noise matrix: better to be small std for position and power
+            Q_KF=diag([((Q))^2 ((Q))^2]);                             %   Process noise matrix: better to be small std for position and power
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -180,7 +207,7 @@ k_b=1.3806488*(10^(-23));                                                   %   
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %---------- < Q_KF must be set up appropriately > ------------%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            R_KF=0.1.^2;                                                	%   Specify noise on alpha: enable if wanted  
+            R_KF=R.^2;                                                	%   Specify noise on alpha: enable if wanted  
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -190,15 +217,7 @@ k_b=1.3806488*(10^(-23));                                                   %   
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %---------- < Q_KF must be set up appropriately > ------------%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            P_cov_ini=diag([2000^(2) 2000^(2)]);                            %   Initial state covariance guess - Change if needed
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %---------- < Q_KF must be set up appropriately > ------------%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            T_KF=1.^2;                             %   Initial state covariance guess - Change if needed
+            P_cov_ini=diag([(P_ini)^(2) (P_ini)^(2)]);                            %   Initial state covariance guess - Change if needed
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -260,8 +279,8 @@ centre_geo_circle=zeros(N_loops_fb,2);                                         %
 radius_geo_circle=zeros(N_loops_fb,1);                                         %   Radius of geolocation circle at instant k
 
 %   Filters
-    %   
-    x_state=zeros(2,N_loops_fb);                                             	%   Updated filter state vector for all steps                               
+    x_state=repmat(x_state_ini, 1, N_loops_fb);
+%     x_state=zeros(2,N_loops_fb);                                                	%   Updated EKF (UKF) state vector for all steps  
     P_cov=zeros(2,2,N_loops_fb);                                             	%   filter Covariance matrix for all
     K_EKF_gain=zeros(2,N_loops_fb);                                           	%   Kalman gain storage
 
@@ -417,8 +436,9 @@ for k=1:N_loops_fb                                                             %
         
     %   Animation: plot new UAV, Jammer and UAV trace at each iteration.
     %   See corresponding function for detail
-    plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,0,psi_jammer);
- 
+    if (plotting)
+        plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,0,psi_jammer);
+    end
 end                              
 %   ------------------------    End Main flyby loop -----------------------------
 
@@ -649,9 +669,9 @@ for k=(N_loops_fb+1):N_loops_vf
         
     %   Animation: plot new UAV, Jammer and UAV trace at each iteration.
     %   See corresponding function for detail
-    plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,r_d,psi_jammer);
-    
-    
+     if(plotting)
+        plot_animation_search(N_plots,k,x_t_vec,x_vec_all(1:k,:),psi_all(k,1),r_est_l(k,1),r_est_h(k,1),centre_geo_circle(k,:),radius_geo_circle(k,1),x_state(:,1:k),k_obs,N_loops_fb,P_cov(:,:,k),p_e,r_d,psi_jammer);
+     end
 end
 
 
